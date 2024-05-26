@@ -1,11 +1,17 @@
 {
-  "scripts": {
-    "dev": "bun run --hot src/index.ts"
+  "scripts": {  
+    "dev": "bun run --hot src/index.ts",
+    "db:generate": "drizzle-kit generate",
+    "db:pull": "drizzle-kit push",
+    "db:push": "drizzle-kit push"
   },
   "dependencies": {
+    "@neondatabase/serverless": "^0.9.3",
+    "drizzle-orm": "^0.30.10",
     "hono": "^3.12.7"
   },
   "devDependencies": {
-    "@types/bun": "^1.0.0"
+    "@types/bun": "^1.0.0",
+    "drizzle-kit": "^0.21.4"
   }
 }
