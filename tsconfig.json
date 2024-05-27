@@ -1,8 +1,14 @@
 {
-  "compilerOptions": {
-    "esModuleInterop": true,
-    "strict": true,
-    "jsx": "react-jsx",
-    "jsxImportSource": "hono/jsx"
-  }
+	"compilerOptions": {
+		"esModuleInterop": true,
+		"strict": true,
+		"jsx": "react-jsx",
+		"jsxImportSource": "hono/jsx",
+		"baseUrl": "./src",
+		"paths": {
+			"@shared/*": ["shared/*"],
+			"@modules/*": ["modules/*"],
+			"@db/*": ["shared/db/*"]
+		}
+	}
 }
