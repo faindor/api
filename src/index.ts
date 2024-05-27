@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 
+import { applyRoutes } from "./applyRoutes";
+
 const app = new Hono();
 
-app.get("/", (c) => {
-	return c.text("Hello Hono!");
-});
+applyRoutes(app);
 
 export default app;
