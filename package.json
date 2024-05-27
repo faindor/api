@@ -1,7 +1,7 @@
 {
 	"scripts": {
 		"dev": "bun run --hot src/index.ts",
-		"biome": "biome check --apply --config-path=./biome.json src/**/*",
+		"biome": "biome check --apply --config-path=./biome.json ./**/*",
 		"db:generate": "drizzle-kit generate",
 		"db:pull": "drizzle-kit push",
 		"db:push": "drizzle-kit push"
