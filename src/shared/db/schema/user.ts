@@ -12,7 +12,7 @@ export const userSchema = pgTable("user", {
 		.notNull(),
 	role: text("role").$type<"admin" | "user">().notNull(),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
-	deletedAt: timestamp("deleted_at").notNull().defaultNow(),
+	deletedAt: timestamp("deleted_at"),
 });
 
 export type User = typeof userSchema.$inferSelect;

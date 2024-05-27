@@ -9,8 +9,8 @@ export const postSchema = pgTable("post", {
 		.references(() => userSchema.id)
 		.notNull(),
 	createdAt: timestamp("created_at").notNull().defaultNow(),
-	updatedAt: timestamp("updated_at").notNull().defaultNow(),
-	deletedAt: timestamp("deleted_at").notNull().defaultNow(),
+	updatedAt: timestamp("updated_at"),
+	deletedAt: timestamp("deleted_at"),
 });
 
 export type Post = typeof postSchema.$inferSelect;
