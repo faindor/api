@@ -1,7 +1,7 @@
 import type { Hono } from "hono";
 
-import userApp from "@modules/user";
+import auth from "@modules/auth";
 
 export const applyRoutes = (app: Hono) => {
-	app.route("/users", userApp);
+	app.route("/auth", auth);
 };

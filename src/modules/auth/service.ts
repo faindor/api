@@ -5,8 +5,9 @@ import {
 	findOrganizationByDomain,
 } from "@modules/organization/service";
 import db from "@shared/db";
+import { organizationSchema } from "@shared/db/schema/organization";
 import { userSchema } from "@shared/db/schema/user";
-import type { CreateUserPayload } from "./types/request";
+import type { RegisterPayload } from "./types/request";
 
 export const getUserById = async (id: number) => {
 	const result = await db
@@ -17,7 +18,35 @@ export const getUserById = async (id: number) => {
 	return result[0];
 };
 
-export const createUser = async (user: CreateUserPayload) => {
+export const getUserByEmail = async (email: string) => {
+	const result = await db
+		.select({
+			id: userSchema.id,
+			name: userSchema.name,
+			email: userSchema.email,
+			password: userSchema.password,
+			role: userSchema.role,
+			organization: organizationSchema,
+		})
+		.from(userSchema)
+		.leftJoin(
+			organizationSchema,
+			eq(userSchema.organizationId, organizationSchema.id),
+		)
+		.where(eq(userSchema.email, email));
+
+	return result[0];
+};
+
+export const getUserByCredentials = async (email: string, password: string) => {
+	const user = await getUserByEmail(email);
+
+	const arePasswordsEqual = await Bun.password.verify(password, user.password);
+
+	return arePasswordsEqual && user;
+};
+
+export const createUser = async (user: RegisterPayload) => {
 	let organizationId = null;
 	// Only uses the domain (i.e "example" from "example@example.com")
 	const organizationDomain = user.email.split("@")[1];
