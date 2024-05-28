@@ -1,11 +1,12 @@
 import { eq } from "drizzle-orm";
 
-import db from "@shared/db";
-import { type UserCreate, userSchema } from "@shared/db/schema/user";
 import {
 	createOrganization,
 	findOrganizationByDomain,
 } from "@modules/organization/service";
+import db from "@shared/db";
+import { userSchema } from "@shared/db/schema/user";
+import type { CreateUserPayload } from "./types/request";
 
 export const getUserById = async (id: number) => {
 	const result = await db
@@ -16,13 +17,13 @@ export const getUserById = async (id: number) => {
 	return result[0];
 };
 
-export const createUser = async (user: UserCreate) => {
-	// Creates the organization if it doesn't exist
+export const createUser = async (user: CreateUserPayload) => {
 	let organizationId = null;
 	// Only uses the domain (i.e "example" from "example@example.com")
-	const organizationDomain = user.email.split("@")[1].split(".")[0];
+	const organizationDomain = user.email.split("@")[1];
 	const existingOrganization =
 		await findOrganizationByDomain(organizationDomain);
+	// Creates the organization if it doesn't exist
 	if (!existingOrganization) {
 		organizationId = await createOrganization({ domain: organizationDomain });
 	} else {
@@ -34,7 +35,7 @@ export const createUser = async (user: UserCreate) => {
 		.values({
 			name: user.name,
 			email: user.email,
-			password: user.password,
+			password: await Bun.password.hash(user.password),
 			role: "user",
 			organizationId: organizationId,
 		})
