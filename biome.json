@@ -10,6 +10,6 @@
 		}
 	},
 	"files": {
-		"ignore": ["node_modules/*", ".env"]
+		"ignore": ["node_modules/*", ".env", "src/shared/db/migrations"]
 	}
 }
