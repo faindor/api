@@ -1,17 +1,12 @@
 import { Hono } from "hono";
-import { createUser, getUserById } from "./service";
+import { createUser } from "./service";
+import type { CreateUserPayload } from "./types/request";
 
 const userApp = new Hono();
 
-userApp.get("/:id", async (c) => {
-	const id = Number(c.req.param("id"));
-	const user = await getUserById(id);
-	return c.json(user);
-});
-
 userApp.post("/", async (c) => {
-	const user = await c.req.json();
-	const userCreated = await createUser(user);
+	const payload = await c.req.json<CreateUserPayload>();
+	const userCreated = await createUser(payload);
 	return c.json(userCreated);
 });
 
