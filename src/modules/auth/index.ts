@@ -3,8 +3,8 @@ import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
 import { InvalidPayloadError } from "@shared/types/errors";
+import { createUser, findUserByCredentials, findUserById } from "./service";
 import type { LoginPayload, RegisterPayload } from "./types/request";
-import { findUserById, createUser, findUserByCredentials } from "./service";
 
 const authApp = new Hono();
 
