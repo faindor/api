@@ -5,15 +5,12 @@ import {
 	findOrganizationByDomain,
 } from "@modules/organization/service";
 import db from "@shared/db";
-import { organizationSchema } from "@shared/db/schema/organization";
-import { userSchema } from "@shared/db/schema/user";
+import { Organizations } from "@shared/db/tables/organization";
+import { Users } from "@shared/db/tables/user";
 import type { RegisterPayload } from "./types/request";
 
 export const getUserById = async (id: number) => {
-	const result = await db
-		.select()
-		.from(userSchema)
-		.where(eq(userSchema.id, id));
+	const result = await db.select().from(Users).where(eq(Users.id, id));
 
 	return result[0];
 };
@@ -21,19 +18,16 @@ export const getUserById = async (id: number) => {
 export const getUserByEmail = async (email: string) => {
 	const result = await db
 		.select({
-			id: userSchema.id,
-			name: userSchema.name,
-			email: userSchema.email,
-			password: userSchema.password,
-			role: userSchema.role,
-			organization: organizationSchema,
+			id: Users.id,
+			name: Users.name,
+			email: Users.email,
+			password: Users.password,
+			role: Users.role,
+			organization: Organizations,
 		})
-		.from(userSchema)
-		.leftJoin(
-			organizationSchema,
-			eq(userSchema.organizationId, organizationSchema.id),
-		)
-		.where(eq(userSchema.email, email));
+		.from(Users)
+		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
+		.where(eq(Users.email, email));
 
 	return result[0];
 };
@@ -60,12 +54,12 @@ export const createUser = async (user: RegisterPayload) => {
 	}
 
 	const result = await db
-		.insert(userSchema)
+		.insert(Users)
 		.values({
 			name: user.name,
 			email: user.email,
 			password: await Bun.password.hash(user.password),
-			role: "user",
+			role: "USER",
 			organizationId: organizationId,
 		})
 		.returning();
