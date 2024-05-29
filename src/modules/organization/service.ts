@@ -4,7 +4,7 @@ import db from "@shared/db";
 import {
 	type OrganizationInsert,
 	Organizations,
-} from "@shared/db/tables/organization";
+} from "@shared/db/tables/organizations";
 
 export const findOrganizationByDomain = async (domain: string) => {
 	const result = await db

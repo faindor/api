@@ -5,8 +5,8 @@ import {
 	findOrganizationByDomain,
 } from "@modules/organization/service";
 import db from "@shared/db";
-import { Organizations } from "@shared/db/tables/organization";
-import { Users } from "@shared/db/tables/user";
+import { Organizations } from "@shared/db/tables/organizations";
+import { Users } from "@shared/db/tables/users";
 import type { RegisterPayload } from "./types/request";
 
 export const getUserById = async (id: number) => {
