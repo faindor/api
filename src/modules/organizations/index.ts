@@ -1,8 +1,8 @@
 import { Hono } from "hono";
 
 import { InvalidPayloadError } from "@shared/types/errors";
-import type { CreateOrganizationPayload } from "./types/request";
 import { createOrganization, findOrganizationById } from "./service";
+import type { CreateOrganizationPayload } from "./types/request";
 
 const organizationApp = new Hono();
 

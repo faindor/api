@@ -1,8 +1,8 @@
 import { eq } from "drizzle-orm";
 
 import db from "@shared/db";
-import { CouldNotCreateError } from "@shared/types/errors";
 import { Organizations } from "@shared/db/tables/organizations";
+import { CouldNotCreateError } from "@shared/types/errors";
 import type { CreateOrganizationPayload } from "./types/request";
 
 export const findOrganizationById = async (id: number) => {

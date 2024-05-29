@@ -3,7 +3,7 @@ import { cors } from "hono/cors";
 import { prettyJSON } from "hono/pretty-json";
 
 import authApp from "@modules/auth";
-import organizationApp from "@modules/organization";
+import organizationApp from "@modules/organizations";
 
 const app = new Hono();
 app.use(cors());

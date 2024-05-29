@@ -3,17 +3,17 @@ import { eq } from "drizzle-orm";
 import {
 	createOrganization,
 	findOrganizationByDomain,
-} from "@modules/organization/service";
+} from "@modules/organizations/service";
 import db from "@shared/db";
-import { Users } from "@shared/db/tables/users";
-import type { RegisterPayload, UpdateUserPayload } from "./types/request";
 import { Organizations } from "@shared/db/tables/organizations";
+import { Users } from "@shared/db/tables/users";
 import {
 	CouldNotCreateError,
 	CouldNotUpdateError,
 	InvalidPasswordError,
 	NotFoundError,
 } from "@shared/types/errors";
+import type { RegisterPayload, UpdateUserPayload } from "./types/request";
 
 export const findUserById = async (id: number) => {
 	const result = await db
