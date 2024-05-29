@@ -7,17 +7,19 @@ import type { CreateOrganizationPayload } from "./types/request";
 const organizationApp = new Hono();
 
 organizationApp.get("/:id", async (c) => {
-	const rawId = c.req.param("id");
-	const parsedId = Number(rawId);
-	if (!parsedId) {
-		return c.json(
-			{ error: new Error(`Invalid organization id: ${rawId}`) },
-			{ status: 400 },
-		);
-	}
+	try {
+		const rawId = c.req.param("id");
+		const parsedId = Number(rawId);
+		if (!parsedId) {
+			throw new InvalidPayloadError(`Invalid organization id: ${rawId}`);
+		}
 
-	const organization = await findOrganizationById(parsedId);
-	return c.json(organization);
+		const organization = await findOrganizationById(parsedId);
+		return c.json(organization);
+	} catch (error) {
+		console.error(error);
+		return c.json({ error }, { status: 400 });
+	}
 });
 
 organizationApp.post("/", async (c) => {
