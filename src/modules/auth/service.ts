@@ -5,17 +5,36 @@ import {
 	findOrganizationByDomain,
 } from "@modules/organization/service";
 import db from "@shared/db";
-import { Organizations } from "@shared/db/tables/organizations";
 import { Users } from "@shared/db/tables/users";
-import type { RegisterPayload } from "./types/request";
+import type { RegisterPayload, UpdateUserPayload } from "./types/request";
+import { Organizations } from "@shared/db/tables/organizations";
+import {
+	CouldNotCreateError,
+	CouldNotUpdateError,
+	InvalidPasswordError,
+	NotFoundError,
+} from "@shared/types/errors";
 
-export const getUserById = async (id: number) => {
-	const result = await db.select().from(Users).where(eq(Users.id, id));
+export const findUserById = async (id: number) => {
+	const result = await db
+		.select({
+			id: Users.id,
+			name: Users.name,
+			email: Users.email,
+			password: Users.password,
+			role: Users.role,
+			organization: Organizations,
+		})
+		.from(Users)
+		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
+		.where(eq(Users.id, id));
+
+	if (!result.length) return null;
 
 	return result[0];
 };
 
-export const getUserByEmail = async (email: string) => {
+export const findUserByEmail = async (email: string) => {
 	const result = await db
 		.select({
 			id: Users.id,
@@ -29,26 +48,46 @@ export const getUserByEmail = async (email: string) => {
 		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
 		.where(eq(Users.email, email));
 
+	if (!result.length) return null;
+
 	return result[0];
 };
 
-export const getUserByCredentials = async (email: string, password: string) => {
-	const user = await getUserByEmail(email);
+export const findUserByCredentials = async (
+	email: string,
+	password: string,
+) => {
+	const user = await findUserByEmail(email);
+
+	if (!user) {
+		throw new NotFoundError(`There is no user with the email: ${email}`);
+	}
 
 	const arePasswordsEqual = await Bun.password.verify(password, user.password);
 
-	return arePasswordsEqual && user;
+	if (!arePasswordsEqual) {
+		throw new InvalidPasswordError(
+			`Invalid credentials for the email: ${email}`,
+		);
+	}
+
+	return user;
 };
 
 export const createUser = async (user: RegisterPayload) => {
 	let organizationId = null;
+
 	// Only uses the domain (i.e "example" from "example@example.com")
 	const organizationDomain = user.email.split("@")[1];
 	const existingOrganization =
 		await findOrganizationByDomain(organizationDomain);
+
 	// Creates the organization if it doesn't exist
 	if (!existingOrganization) {
-		organizationId = await createOrganization({ domain: organizationDomain });
+		const createdOrganization = await createOrganization({
+			domain: organizationDomain,
+		});
+		organizationId = createdOrganization.id;
 	} else {
 		organizationId = existingOrganization.id;
 	}
@@ -63,5 +102,40 @@ export const createUser = async (user: RegisterPayload) => {
 			organizationId: organizationId,
 		})
 		.returning();
-	return result;
+
+	if (!result.length) {
+		throw new CouldNotCreateError(
+			`Failed to create user with email: ${user.email} and name: ${user.name}`,
+		);
+	}
+
+	return result[0];
+};
+
+export const updateUser = async (user: UpdateUserPayload) => {
+	const existingUser = await findUserById(user.id);
+
+	if (!existingUser) {
+		throw new NotFoundError(`There is no user with id: ${user.id}`);
+	}
+
+	if (user.password) {
+		user.password = await Bun.password.hash(user.password);
+	}
+
+	const result = await db
+		.update(Users)
+		.set({
+			name: user.name || existingUser.name,
+			email: user.email || existingUser.email,
+			password: user.password || existingUser.password,
+		})
+		.where(eq(Users.id, user.id))
+		.returning();
+
+	if (!result.length) {
+		throw new CouldNotUpdateError(`Failed to update user with id: ${user.id}`);
+	}
+
+	return result[0];
 };
