@@ -17,7 +17,7 @@ export const jwt = createMiddleware(async (c, next) => {
 	}
 
 	try {
-		const payload = await verify(token, process.env.JWT_SECRET);
+		const payload = await verify(token, Bun.env.JWT_SECRET);
 		c.set("jwtPayload", payload);
 	} catch (error) {
 		return c.json({ error: "Invalid token" }, { status: 401 });

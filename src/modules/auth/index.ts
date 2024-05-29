@@ -19,7 +19,7 @@ auth.post("/login", async (c) => {
 		{
 			domain: user.organization?.domain,
 		},
-		process.env.JWT_SECRET,
+		Bun.env.JWT_SECRET,
 	);
 
 	return c.json({ token }, { status: 200 });

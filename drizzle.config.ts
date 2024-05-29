@@ -5,6 +5,6 @@ export default defineConfig({
 	schema: "./src/shared/db/schema/*",
 	out: "./src/shared/db/migrations",
 	dbCredentials: {
-		url: process.env.DATABASE_URL,
+		url: Bun.env.DATABASE_URL,
 	},
 });
