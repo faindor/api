@@ -13,6 +13,7 @@ import {
 	InvalidPasswordError,
 	NotFoundError,
 } from "@shared/types/errors";
+import { UserRoles } from "@shared/types/roles";
 import type { RegisterPayload, UpdateUserPayload } from "./types/request";
 
 export const findUserById = async (id: number) => {
@@ -98,7 +99,7 @@ export const createUser = async (user: RegisterPayload) => {
 			name: user.name,
 			email: user.email,
 			password: await Bun.password.hash(user.password),
-			role: "USER",
+			role: UserRoles.USER,
 			organizationId: organizationId,
 		})
 		.returning();

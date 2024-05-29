@@ -49,7 +49,7 @@ authApp.post("/login", async (c) => {
 		return c.json({ token });
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 401 });
+		return c.json({ error }, { status: 400 });
 	}
 });
 
@@ -68,7 +68,7 @@ authApp.post("/register", async (c) => {
 		return c.json(userCreated);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 401 });
+		return c.json({ error }, { status: 400 });
 	}
 });
 
