@@ -10,8 +10,8 @@ import {
 import { UserRoles } from "@shared/types/roles";
 import {
 	createPost,
-	findPostById,
 	findLatestsPostsByDomain,
+	findPostById,
 	updatePost,
 } from "./service";
 import type { CreatePostPayload, UpdatePostPayload } from "./types/request";

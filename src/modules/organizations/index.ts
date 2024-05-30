@@ -1,9 +1,9 @@
 import { Hono } from "hono";
 
+import { jwt } from "@shared/middleware/jwt";
 import { InvalidPayloadError } from "@shared/types/errors";
 import { createOrganization, findOrganizationById } from "./service";
 import type { CreateOrganizationPayload } from "./types/request";
-import { jwt } from "@shared/middleware/jwt";
 
 const organizationApp = new Hono();
 
