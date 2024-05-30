@@ -3,10 +3,11 @@ import { Hono } from "hono";
 import { InvalidPayloadError } from "@shared/types/errors";
 import { createOrganization, findOrganizationById } from "./service";
 import type { CreateOrganizationPayload } from "./types/request";
+import { jwt } from "@shared/middleware/jwt";
 
 const organizationApp = new Hono();
 
-organizationApp.get("/:id", async (c) => {
+organizationApp.get("/:id", jwt, async (c) => {
 	try {
 		const rawId = c.req.param("id");
 		const parsedId = Number(rawId);
@@ -22,7 +23,7 @@ organizationApp.get("/:id", async (c) => {
 	}
 });
 
-organizationApp.post("/", async (c) => {
+organizationApp.post("/", jwt, async (c) => {
 	try {
 		const payload = await c.req.json<CreateOrganizationPayload>();
 
