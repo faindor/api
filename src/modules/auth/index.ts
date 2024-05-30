@@ -8,11 +8,6 @@ import type { LoginPayload, RegisterPayload } from "./types/request";
 
 const authApp = new Hono();
 
-authApp.get("/me", jwt, async (c) => {
-	const user = await findUserById(c.get("userId"));
-	return c.json(user);
-});
-
 authApp.get("/:id", jwt, async (c) => {
 	const rawUserId = c.req.param("id");
 	const parsedUserId = Number(rawUserId);
@@ -41,6 +36,7 @@ authApp.post("/login", async (c) => {
 		const token = await sign(
 			{
 				userId: user.id,
+				userRole: user.role,
 				userDomain: user.organization.domain,
 			},
 			Bun.env.JWT_SECRET,

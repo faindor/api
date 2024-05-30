@@ -19,22 +19,14 @@ import type { CreatePostPayload, UpdatePostPayload } from "./types/request";
 const postsApp = new Hono();
 
 postsApp.get("/latests", jwt, async (c) => {
-	const loggedUser = await findUserById(c.get("userId"));
-	if (!loggedUser) {
-		throw new AuthorizationError(
-			`User not found inside JWT with id: ${c.get("userId")}`,
-		);
-	}
+	const loggedUser = c.get("loggedUser");
 
 	const page = Number(c.req.param("page")) || 1;
 	if (page < 1) {
 		throw new InvalidPayloadError("The page must be greater than 0");
 	}
 
-	const posts = await findLatestsPostsByDomain(
-		loggedUser.organization.domain,
-		page,
-	);
+	const posts = await findLatestsPostsByDomain(loggedUser.domain, page);
 
 	return c.json(posts);
 });
@@ -47,19 +39,14 @@ postsApp.post("/", jwt, async (c) => {
 			throw new Error("Content is required to create a post");
 		}
 
-		const loggedUser = await findUserById(c.get("userId"));
-		if (!loggedUser) {
-			throw new AuthorizationError(
-				`User not found inside JWT with id: ${c.get("userId")}`,
-			);
-		}
+		const loggedUser = c.get("loggedUser");
 
 		// Check if the user is allowed to create a post for another user
 		if (payload.userId) {
 			const payloadUser = await findUserById(payload.userId);
 			if (!payloadUser) {
 				throw new AuthorizationError(
-					`User not found inside payload with id: ${c.get("userId")}`,
+					`User not found inside payload with id: ${payload.userId}`,
 				);
 			}
 
@@ -96,12 +83,7 @@ postsApp.patch("/:id", jwt, async (c) => {
 			throw new Error("Content is required to update a post");
 		}
 
-		const loggedUser = await findUserById(c.get("userId"));
-		if (!loggedUser) {
-			throw new AuthorizationError(
-				`User not found inside JWT with id: ${c.get("userId")}`,
-			);
-		}
+		const loggedUser = c.get("loggedUser");
 
 		const existingPost = await findPostById(parsedId);
 		if (!existingPost) {
