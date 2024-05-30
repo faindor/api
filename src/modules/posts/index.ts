@@ -11,6 +11,7 @@ import { UserRoles } from "@shared/types/roles";
 import {
 	createPost,
 	findLatestsPostsByDomain,
+	findLatestsPostsByUserId,
 	findPostById,
 	updatePost,
 } from "./service";
@@ -27,6 +28,27 @@ postsApp.get("/latests", jwt, async (c) => {
 	}
 
 	const posts = await findLatestsPostsByDomain(loggedUser.domain, page);
+
+	return c.json(posts);
+});
+
+postsApp.get("/", jwt, async (c) => {
+	const page = Number(c.req.param("page")) || 1;
+	if (page < 1) {
+		throw new InvalidPayloadError("The page must be greater than 0");
+	}
+
+	const userIdParam = c.req.param("user_id");
+	if (!userIdParam) {
+		throw new InvalidPayloadError("The parameter 'user_id' is required");
+	}
+
+	const userParam = await findUserById(Number(userIdParam));
+	if (!userParam) {
+		throw new NotFoundError(`User not found with id: ${userIdParam}`);
+	}
+
+	const posts = await findLatestsPostsByUserId(userParam.id, page);
 
 	return c.json(posts);
 });

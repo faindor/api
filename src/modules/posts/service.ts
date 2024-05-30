@@ -22,6 +22,30 @@ export const findPostById = async (id: number) => {
 	return result[0];
 };
 
+export const findLatestsPostsByUserId = async (userId: number, page = 1) => {
+	const result = await db
+		.select({
+			id: Posts.id,
+			content: Posts.content,
+			user: {
+				id: Users.id,
+				name: Users.name,
+				email: Users.email,
+			},
+			createdAt: Posts.createdAt,
+			updatedAt: Posts.updatedAt,
+			deletedAt: Posts.deletedAt,
+		})
+		.from(Posts)
+		.innerJoin(Users, eq(Posts.userId, Users.id))
+		.where(eq(Users.id, userId))
+		.orderBy(desc(Posts.createdAt))
+		.offset((page - 1) * 10) // Get 10 posts per page, skip the other ones
+		.limit(10);
+
+	return result;
+};
+
 export const findLatestsPostsByDomain = async (domain: string, page = 1) => {
 	const result = await db
 		.select({
