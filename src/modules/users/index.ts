@@ -6,9 +6,9 @@ import { InvalidPayloadError } from "@shared/types/errors";
 import { createUser, findUserByCredentials, findUserById } from "./service";
 import type { LoginPayload, RegisterPayload } from "./types/request";
 
-const authApp = new Hono();
+const usersApp = new Hono();
 
-authApp.get("/:id", jwt, async (c) => {
+usersApp.get("/:id", jwt, async (c) => {
 	const rawUserId = c.req.param("id");
 	const parsedUserId = Number(rawUserId);
 	if (!parsedUserId) {
@@ -22,7 +22,7 @@ authApp.get("/:id", jwt, async (c) => {
 	return c.json(user);
 });
 
-authApp.post("/login", async (c) => {
+usersApp.post("/login", async (c) => {
 	try {
 		const payload = await c.req.json<LoginPayload>();
 
@@ -49,7 +49,7 @@ authApp.post("/login", async (c) => {
 	}
 });
 
-authApp.post("/register", async (c) => {
+usersApp.post("/register", async (c) => {
 	try {
 		const payload = await c.req.json<RegisterPayload>();
 
@@ -68,4 +68,4 @@ authApp.post("/register", async (c) => {
 	}
 });
 
-export default authApp;
+export default usersApp;

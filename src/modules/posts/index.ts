@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-import { findUserById } from "@modules/auth/service";
+import { findUserById } from "@modules/users/service";
 import { jwt } from "@shared/middleware/jwt";
 import {
 	AuthorizationError,
