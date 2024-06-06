@@ -8,10 +8,3 @@ export type RegisterPayload = {
 	email: string;
 	password: string;
 };
-
-export type UpdateUserPayload = {
-	id: number;
-	name?: string;
-	email?: string;
-	password?: string;
-};

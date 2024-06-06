@@ -14,7 +14,7 @@ import {
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
-import type { RegisterPayload, UpdateUserPayload } from "./types/request";
+import type { RegisterPayload } from "./types/request";
 
 export const findUserById = async (id: number) => {
 	const result = await db
@@ -108,34 +108,6 @@ export const createUser = async (user: RegisterPayload) => {
 		throw new CouldNotCreateError(
 			`Failed to create user with email: ${user.email} and name: ${user.name}`,
 		);
-	}
-
-	return result[0];
-};
-
-export const updateUser = async (user: UpdateUserPayload) => {
-	const existingUser = await findUserById(user.id);
-
-	if (!existingUser) {
-		throw new NotFoundError(`There is no user with id: ${user.id}`);
-	}
-
-	if (user.password) {
-		user.password = await Bun.password.hash(user.password);
-	}
-
-	const result = await db
-		.update(Users)
-		.set({
-			name: user.name || existingUser.name,
-			email: user.email || existingUser.email,
-			password: user.password || existingUser.password,
-		})
-		.where(eq(Users.id, user.id))
-		.returning();
-
-	if (!result.length) {
-		throw new CouldNotUpdateError(`Failed to update user with id: ${user.id}`);
 	}
 
 	return result[0];
