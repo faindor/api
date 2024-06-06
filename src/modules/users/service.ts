@@ -1,4 +1,4 @@
-import { eq } from "drizzle-orm";
+import { count, eq } from "drizzle-orm";
 
 import {
 	createOrganization,
@@ -6,28 +6,31 @@ import {
 } from "@modules/organizations/service";
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
+import { Posts } from "@shared/db/tables/posts";
 import { Users } from "@shared/db/tables/users";
 import {
 	CouldNotCreateError,
-	CouldNotUpdateError,
 	InvalidPasswordError,
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
 import type { RegisterPayload } from "./types/request";
 
-export const findUserById = async (id: number) => {
+export const getPublicUserInfoById = async (id: number) => {
 	const result = await db
 		.select({
 			id: Users.id,
 			name: Users.name,
 			email: Users.email,
-			password: Users.password,
-			role: Users.role,
-			organization: Organizations,
+			organization: {
+				id: Organizations.id,
+				domain: Organizations.domain,
+			},
+			publishedPosts: count(Posts.id),
 		})
 		.from(Users)
 		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
+		.leftJoin(Posts, eq(Users.id, Posts.userId))
 		.where(eq(Users.id, id));
 
 	if (!result.length) return null;
@@ -35,7 +38,7 @@ export const findUserById = async (id: number) => {
 	return result[0];
 };
 
-export const findUserByEmail = async (email: string) => {
+export const getUserByEmail = async (email: string) => {
 	const result = await db
 		.select({
 			id: Users.id,
@@ -43,6 +46,8 @@ export const findUserByEmail = async (email: string) => {
 			email: Users.email,
 			password: Users.password,
 			role: Users.role,
+			createdAt: Users.createdAt,
+			deletedAt: Users.deletedAt,
 			organization: Organizations,
 		})
 		.from(Users)
@@ -58,7 +63,7 @@ export const findUserByCredentials = async (
 	email: string,
 	password: string,
 ) => {
-	const user = await findUserByEmail(email);
+	const user = await getUserByEmail(email);
 
 	if (!user) {
 		throw new NotFoundError(`There is no user with the email: ${email}`);

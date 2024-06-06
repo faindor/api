@@ -3,23 +3,29 @@ import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
 import { InvalidPayloadError } from "@shared/types/errors";
-import { createUser, findUserByCredentials, findUserById } from "./service";
+import {
+	createUser,
+	findUserByCredentials,
+	getPublicUserInfoById,
+} from "./service";
 import type { LoginPayload, RegisterPayload } from "./types/request";
 
 const usersApp = new Hono();
 
 usersApp.get("/:id", jwt, async (c) => {
-	const rawUserId = c.req.param("id");
-	const parsedUserId = Number(rawUserId);
-	if (!parsedUserId) {
-		return c.json(
-			{ error: new Error(`Invalid user id: ${rawUserId}`) },
-			{ status: 400 },
-		);
-	}
+	try {
+		const rawUserId = Number(c.req.param("id"));
+		const parsedUserId = Number(rawUserId);
+		if (!parsedUserId) {
+			throw new InvalidPayloadError(`Invalid user id: ${rawUserId}`);
+		}
 
-	const user = await findUserById(parsedUserId);
-	return c.json(user);
+		const user = await getPublicUserInfoById(parsedUserId);
+		return c.json(user);
+	} catch (error) {
+		console.error(error);
+		return c.json({ error }, { status: 400 });
+	}
 });
 
 usersApp.post("/login", async (c) => {
