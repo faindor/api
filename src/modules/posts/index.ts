@@ -1,6 +1,6 @@
 import { Hono } from "hono";
 
-import { findUserById } from "@modules/users/service";
+import { getUserById } from "@modules/users/service";
 import { jwt } from "@shared/middleware/jwt";
 import {
 	AuthorizationError,
@@ -10,9 +10,9 @@ import {
 import { UserRoles } from "@shared/types/roles";
 import {
 	createPost,
-	findLatestsPostsByDomain,
-	findLatestsPostsByUserId,
-	findPostById,
+	getLatestsPostsByDomain,
+	getLatestsPostsByUserId,
+	getPostById,
 	updatePost,
 } from "./service";
 import type { CreatePostPayload, UpdatePostPayload } from "./types/request";
@@ -20,37 +20,60 @@ import type { CreatePostPayload, UpdatePostPayload } from "./types/request";
 const postsApp = new Hono();
 
 postsApp.get("/latests", jwt, async (c) => {
-	const loggedUser = c.get("loggedUser");
+	try {
+		const loggedUser = c.get("loggedUser");
 
-	const page = Number(c.req.param("page")) || 1;
-	if (page < 1) {
-		throw new InvalidPayloadError("The page must be greater than 0");
+		const page = Number(c.req.query("page")) || 1;
+		if (page < 1) {
+			throw new InvalidPayloadError("The page must be greater than 0");
+		}
+
+		const posts = await getLatestsPostsByDomain(loggedUser.domain, page);
+
+		return c.json(posts);
+	} catch (error) {
+		console.error(error);
+		return c.json({ error }, { status: 400 });
 	}
-
-	const posts = await findLatestsPostsByDomain(loggedUser.domain, page);
-
-	return c.json(posts);
 });
 
-postsApp.get("/", jwt, async (c) => {
-	const page = Number(c.req.param("page")) || 1;
-	if (page < 1) {
-		throw new InvalidPayloadError("The page must be greater than 0");
+postsApp.get("/:userId/latests", jwt, async (c) => {
+	try {
+		const loggedUser = c.get("loggedUser");
+
+		const rawUserId = c.req.param("userId");
+		const parsedUserId = Number(rawUserId);
+		if (!parsedUserId) {
+			throw new InvalidPayloadError(`Invalid user id: ${parsedUserId}`);
+		}
+
+		const userParam = await getUserById(parsedUserId);
+		if (!userParam) {
+			throw new NotFoundError(`User not found with id: ${parsedUserId}`);
+		}
+
+		// An user can't get posts from another organization (unless they are admin)
+		if (
+			userParam.organization.domain !== loggedUser.domain &&
+			loggedUser.role !== UserRoles.APP_ADMIN
+		) {
+			throw new AuthorizationError(
+				"You are not allowed to get posts of an user from another organization",
+			);
+		}
+
+		const page = Number(c.req.query("page")) || 1;
+		if (page < 1) {
+			throw new InvalidPayloadError("The page must be greater than 0");
+		}
+
+		const posts = await getLatestsPostsByUserId(userParam.id, page);
+
+		return c.json(posts);
+	} catch (error) {
+		console.error(error);
+		return c.json({ error }, { status: 400 });
 	}
-
-	const userIdParam = c.req.param("user_id");
-	if (!userIdParam) {
-		throw new InvalidPayloadError("The parameter 'user_id' is required");
-	}
-
-	const userParam = await findUserById(Number(userIdParam));
-	if (!userParam) {
-		throw new NotFoundError(`User not found with id: ${userIdParam}`);
-	}
-
-	const posts = await findLatestsPostsByUserId(userParam.id, page);
-
-	return c.json(posts);
 });
 
 postsApp.post("/", jwt, async (c) => {
@@ -65,7 +88,7 @@ postsApp.post("/", jwt, async (c) => {
 
 		// Check if the user is allowed to create a post for another user
 		if (payload.userId) {
-			const payloadUser = await findUserById(payload.userId);
+			const payloadUser = await getUserById(payload.userId);
 			if (!payloadUser) {
 				throw new AuthorizationError(
 					`User not found inside payload with id: ${payload.userId}`,
@@ -107,7 +130,7 @@ postsApp.patch("/:id", jwt, async (c) => {
 
 		const loggedUser = c.get("loggedUser");
 
-		const existingPost = await findPostById(parsedId);
+		const existingPost = await getPostById(parsedId);
 		if (!existingPost) {
 			throw new NotFoundError(`Post not found with id: ${parsedId}`);
 		}
