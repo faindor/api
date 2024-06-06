@@ -38,6 +38,27 @@ export const getPublicUserInfoById = async (id: number) => {
 	return result[0];
 };
 
+export const getUserById = async (id: number) => {
+	const result = await db
+		.select({
+			id: Users.id,
+			name: Users.name,
+			email: Users.email,
+			password: Users.password,
+			role: Users.role,
+			createdAt: Users.createdAt,
+			deletedAt: Users.deletedAt,
+			organization: Organizations,
+		})
+		.from(Users)
+		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
+		.where(eq(Users.id, id));
+
+	if (!result.length) return null;
+
+	return result[0];
+};
+
 export const getUserByEmail = async (email: string) => {
 	const result = await db
 		.select({
