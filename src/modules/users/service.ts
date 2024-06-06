@@ -2,7 +2,7 @@ import { count, eq } from "drizzle-orm";
 
 import {
 	createOrganization,
-	findOrganizationByDomain,
+	getOrganizationByDomain,
 } from "@modules/organizations/service";
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
@@ -86,7 +86,7 @@ export const createUser = async (user: RegisterPayload) => {
 	// Only uses the domain (i.e "example" from "example@example.com")
 	const organizationDomain = user.email.split("@")[1];
 	const existingOrganization =
-		await findOrganizationByDomain(organizationDomain);
+		await getOrganizationByDomain(organizationDomain);
 
 	// Creates the organization if it doesn't exist
 	if (!existingOrganization) {
@@ -107,7 +107,11 @@ export const createUser = async (user: RegisterPayload) => {
 			role: UserRoles.USER,
 			organizationId: organizationId,
 		})
-		.returning();
+		.returning({
+			id: Users.id,
+			name: Users.name,
+			email: Users.email,
+		});
 
 	if (!result.length) {
 		throw new CouldNotCreateError(

@@ -5,20 +5,14 @@ import { Organizations } from "@shared/db/tables/organizations";
 import { CouldNotCreateError } from "@shared/types/errors";
 import type { CreateOrganizationPayload } from "./types/request";
 
-export const findOrganizationById = async (id: number) => {
+export const getOrganizationByDomain = async (domain: string) => {
 	const result = await db
-		.select()
-		.from(Organizations)
-		.where(eq(Organizations.id, id));
-
-	if (!result.length) return null;
-
-	return result[0];
-};
-
-export const findOrganizationByDomain = async (domain: string) => {
-	const result = await db
-		.select()
+		.select({
+			id: Organizations.id,
+			domain: Organizations.domain,
+			createdAt: Organizations.createdAt,
+			deletedAt: Organizations.deletedAt,
+		})
 		.from(Organizations)
 		.where(eq(Organizations.domain, domain));
 
