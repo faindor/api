@@ -7,7 +7,7 @@ import { Users } from "@shared/db/tables/users";
 import { CouldNotCreateError, CouldNotUpdateError } from "@shared/types/errors";
 import type { CreatePostPayload } from "./types/request";
 
-export const findPostById = async (id: number) => {
+export const getPostById = async (id: number) => {
 	const result = await db
 		.select({
 			id: Posts.id,
@@ -22,7 +22,7 @@ export const findPostById = async (id: number) => {
 	return result[0];
 };
 
-export const findLatestsPostsByUserId = async (userId: number, page = 1) => {
+export const getLatestsPostsByUserId = async (userId: number, page = 1) => {
 	const result = await db
 		.select({
 			id: Posts.id,
@@ -46,7 +46,7 @@ export const findLatestsPostsByUserId = async (userId: number, page = 1) => {
 	return result;
 };
 
-export const findLatestsPostsByDomain = async (domain: string, page = 1) => {
+export const getLatestsPostsByDomain = async (domain: string, page = 1) => {
 	const result = await db
 		.select({
 			id: Posts.id,
