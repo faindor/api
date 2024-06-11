@@ -7,7 +7,5 @@ updates:
     directory: "/"
     schedule:
       interval: "daily"
-    asignees:
-      - "gbbelloponce"
     commit-message:
       prefix: "build"
