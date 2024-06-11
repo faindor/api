@@ -8,19 +8,24 @@ import {
 	findUserByCredentials,
 	getPublicUserInfoById,
 } from "./service";
-import type { LoginPayload, RegisterPayload } from "./types/request";
+import {
+	getUserSchema,
+	type LoginPayload,
+	type RegisterPayload,
+} from "./types/request";
+import { schemaValidator } from "@shared/schemaValidator";
 
 const usersApp = new Hono();
 
 usersApp.get("/:id", jwt, async (c) => {
 	try {
-		const rawUserId = Number(c.req.param("id"));
-		const parsedUserId = Number(rawUserId);
-		if (!parsedUserId) {
-			throw new InvalidPayloadError(`Invalid user id: ${rawUserId}`);
-		}
+		const userId = schemaValidator({
+			schema: getUserSchema,
+			value: c.req.param("id"),
+			route: "/users/:id",
+		});
 
-		const user = await getPublicUserInfoById(parsedUserId);
+		const user = await getPublicUserInfoById(userId);
 		return c.json(user);
 	} catch (error) {
 		console.error(error);
