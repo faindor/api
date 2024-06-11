@@ -1,5 +1,5 @@
-import type { z } from "zod";
 import { ValidationError } from "@shared/types/errors";
+import type { z } from "zod";
 
 type SchemaValidatorParams<T extends z.ZodType> = {
 	schema: T;

@@ -2,6 +2,7 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
+import { schemaValidator } from "@shared/schemaValidator";
 import { InvalidPayloadError } from "@shared/types/errors";
 import {
 	createUser,
@@ -9,11 +10,10 @@ import {
 	getPublicUserInfoById,
 } from "./service";
 import {
-	getUserSchema,
 	type LoginPayload,
 	type RegisterPayload,
+	getUserSchema,
 } from "./types/request";
-import { schemaValidator } from "@shared/schemaValidator";
 
 const usersApp = new Hono();
 
