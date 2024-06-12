@@ -14,7 +14,10 @@ import {
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
-import type { RegisterPayload } from "./types/request";
+import type {
+	CreateUserParams,
+	GetUserByCredentialsParams,
+} from "./types/request";
 
 export const getPublicUserInfoById = async (id: number) => {
 	const result = await db
@@ -80,10 +83,10 @@ export const getUserByEmail = async (email: string) => {
 	return result[0];
 };
 
-export const findUserByCredentials = async (
-	email: string,
-	password: string,
-) => {
+export const getUserByCredentials = async ({
+	email,
+	password,
+}: GetUserByCredentialsParams) => {
 	const user = await getUserByEmail(email);
 
 	if (!user) {
@@ -101,7 +104,7 @@ export const findUserByCredentials = async (
 	return user;
 };
 
-export const createUser = async (user: RegisterPayload) => {
+export const createUser = async (user: CreateUserParams) => {
 	let organizationId = null;
 
 	// Only uses the domain (i.e "example" from "example@example.com")

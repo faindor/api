@@ -3,7 +3,7 @@ import { eq } from "drizzle-orm";
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
 import { CouldNotCreateError } from "@shared/types/errors";
-import type { CreateOrganizationPayload } from "./types/request";
+import type { CreateOrganizationParams } from "./types/request";
 
 export const getOrganizationByDomain = async (domain: string) => {
 	const result = await db
@@ -21,19 +21,19 @@ export const getOrganizationByDomain = async (domain: string) => {
 	return result[0];
 };
 
-export const createOrganization = async (
-	organization: CreateOrganizationPayload,
-) => {
+export const createOrganization = async ({
+	domain,
+}: CreateOrganizationParams) => {
 	const result = await db
 		.insert(Organizations)
 		.values({
-			domain: organization.domain,
+			domain: domain,
 		})
 		.returning({ id: Organizations.id });
 
 	if (!result.length) {
 		throw new CouldNotCreateError(
-			`Failed to create organization with domain: ${organization.domain} `,
+			`Failed to create organization with domain: ${domain} `,
 		);
 	}
 

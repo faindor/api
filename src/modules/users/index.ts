@@ -2,25 +2,26 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
-import { InvalidPayloadError } from "@shared/types/errors";
+import { schemaValidator } from "@shared/schemaValidator";
+import { idSchema } from "@shared/types/schemas";
 import {
 	createUser,
-	findUserByCredentials,
 	getPublicUserInfoById,
+	getUserByCredentials,
 } from "./service";
-import type { LoginPayload, RegisterPayload } from "./types/request";
+import { loginSchema, registerSchema } from "./types/request";
 
 const usersApp = new Hono();
 
 usersApp.get("/:id", jwt, async (c) => {
 	try {
-		const rawUserId = Number(c.req.param("id"));
-		const parsedUserId = Number(rawUserId);
-		if (!parsedUserId) {
-			throw new InvalidPayloadError(`Invalid user id: ${rawUserId}`);
-		}
+		const userId = schemaValidator({
+			schema: idSchema,
+			value: c.req.param("id"),
+			route: "/users/:id",
+		});
 
-		const user = await getPublicUserInfoById(parsedUserId);
+		const user = await getPublicUserInfoById(userId);
 		return c.json(user);
 	} catch (error) {
 		console.error(error);
@@ -30,13 +31,13 @@ usersApp.get("/:id", jwt, async (c) => {
 
 usersApp.post("/login", async (c) => {
 	try {
-		const payload = await c.req.json<LoginPayload>();
+		const { email, password } = schemaValidator({
+			schema: loginSchema,
+			value: c.req.json(),
+			route: "/users/login",
+		});
 
-		if (!payload.email || !payload.password) {
-			throw new InvalidPayloadError("Email and password are required to login");
-		}
-
-		const user = await findUserByCredentials(payload.email, payload.password);
+		const user = await getUserByCredentials({ email, password });
 
 		// Create token with the user's id and organization's domain
 		const token = await sign(
@@ -57,17 +58,15 @@ usersApp.post("/login", async (c) => {
 
 usersApp.post("/register", async (c) => {
 	try {
-		const payload = await c.req.json<RegisterPayload>();
+		const { name, email, password } = schemaValidator({
+			schema: registerSchema,
+			value: c.req.json(),
+			route: "/users/register",
+		});
 
-		if (!payload.name || !payload.email || !payload.password) {
-			throw new InvalidPayloadError(
-				"Email and password are required to register",
-			);
-		}
+		const createdUser = await createUser({ name, email, password });
 
-		const userCreated = await createUser(payload);
-
-		return c.json(userCreated);
+		return c.json(createdUser);
 	} catch (error) {
 		console.error(error);
 		return c.json({ error }, { status: 400 });
