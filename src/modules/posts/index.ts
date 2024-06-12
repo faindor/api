@@ -2,12 +2,14 @@ import { Hono } from "hono";
 
 import { getUserById } from "@modules/users/service";
 import { jwt } from "@shared/middleware/jwt";
+import { schemaValidator } from "@shared/schemaValidator";
 import {
 	AuthorizationError,
 	InvalidPayloadError,
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
+import { idSchema } from "@shared/types/schemas";
 import {
 	createPost,
 	getLatestsPostsByDomain,
@@ -15,7 +17,7 @@ import {
 	getPostById,
 	updatePost,
 } from "./service";
-import type { CreatePostPayload, UpdatePostPayload } from "./types/request";
+import { createPostSchema, updatePostSchema } from "./types/request";
 
 const postsApp = new Hono();
 
@@ -52,7 +54,7 @@ postsApp.get("/:userId/latests", jwt, async (c) => {
 			throw new NotFoundError(`User not found with id: ${parsedUserId}`);
 		}
 
-		// An user can't get posts from another organization (unless they are admin)
+		// A user cannot get posts from another organization (unless they are admin)
 		if (
 			userParam.organization.domain !== loggedUser.domain &&
 			loggedUser.role !== UserRoles.APP_ADMIN
@@ -78,34 +80,18 @@ postsApp.get("/:userId/latests", jwt, async (c) => {
 
 postsApp.post("/", jwt, async (c) => {
 	try {
-		const payload = await c.req.json<CreatePostPayload>();
-
-		if (!payload.content) {
-			throw new Error("Content is required to create a post");
-		}
+		const { content } = schemaValidator({
+			schema: createPostSchema,
+			value: c.req.json(),
+			route: "/posts",
+		});
 
 		const loggedUser = c.get("loggedUser");
 
-		// Check if the user is allowed to create a post for another user
-		if (payload.userId) {
-			const payloadUser = await getUserById(payload.userId);
-			if (!payloadUser) {
-				throw new AuthorizationError(
-					`User not found inside payload with id: ${payload.userId}`,
-				);
-			}
-
-			if (
-				loggedUser.role !== UserRoles.APP_ADMIN &&
-				payloadUser.id !== loggedUser.id
-			) {
-				throw new AuthorizationError(
-					"You are not allowed to create a post for another user",
-				);
-			}
-		}
-
-		const post = await createPost(payload, loggedUser.id);
+		const post = await createPost({
+			content: content,
+			userId: loggedUser.id,
+		});
 
 		return c.json(post);
 	} catch (error) {
@@ -116,38 +102,26 @@ postsApp.post("/", jwt, async (c) => {
 
 postsApp.patch("/:id", jwt, async (c) => {
 	try {
-		const rawId = c.req.param("id");
-		const parsedId = Number(rawId);
-		if (!parsedId) {
-			throw new InvalidPayloadError(`Invalid post id: ${rawId}`);
-		}
+		const postId = schemaValidator({
+			schema: idSchema,
+			value: c.req.param("id"),
+			route: "/posts/:id",
+		});
 
-		const payload = await c.req.json<UpdatePostPayload>();
+		const { content } = schemaValidator({
+			schema: updatePostSchema,
+			value: c.req.json(),
+			route: "/posts/:id",
+		});
 
-		if (!payload.content) {
-			throw new Error("Content is required to update a post");
-		}
-
-		const loggedUser = c.get("loggedUser");
-
-		const existingPost = await getPostById(parsedId);
+		const existingPost = await getPostById(postId);
 		if (!existingPost) {
-			throw new NotFoundError(`Post not found with id: ${parsedId}`);
+			throw new NotFoundError(`Post not found with id: ${postId}`);
 		}
 
-		// Check if the user is allowed to update the post
-		if (
-			loggedUser.role !== UserRoles.APP_ADMIN &&
-			existingPost.userId !== loggedUser.id
-		) {
-			throw new AuthorizationError(
-				`You are not allowed to update post with id: ${existingPost.id}`,
-			);
-		}
+		const updatedPost = await updatePost({ id: existingPost.id, content });
 
-		const post = await updatePost(existingPost.id, payload);
-
-		return c.json(post);
+		return c.json(updatedPost);
 	} catch (error) {
 		console.error(error);
 		return c.json({ error }, { status: 400 });

@@ -5,7 +5,7 @@ import { Organizations } from "@shared/db/tables/organizations";
 import { Posts } from "@shared/db/tables/posts";
 import { Users } from "@shared/db/tables/users";
 import { CouldNotCreateError, CouldNotUpdateError } from "@shared/types/errors";
-import type { CreatePostPayload } from "./types/request";
+import type { CreatePostParams, UpdatePostParams } from "./types/request";
 
 export const getPostById = async (id: number) => {
 	const result = await db
@@ -71,38 +71,35 @@ export const getLatestsPostsByDomain = async (domain: string, page = 1) => {
 	return result;
 };
 
-export const createPost = async (
-	post: CreatePostPayload,
-	fallbackUserId: number,
-) => {
+export const createPost = async (post: CreatePostParams) => {
 	const result = await db
 		.insert(Posts)
 		.values({
 			content: post.content,
-			userId: post.userId || fallbackUserId,
+			userId: post.userId,
 		})
 		.returning();
 
 	if (!result.length) {
 		throw new CouldNotCreateError(
-			`Failed to create post with content: ${post.content}`,
+			`Failed to create post with content: ${post.content} for user: ${post.userId}`,
 		);
 	}
 
 	return result[0];
 };
 
-export const updatePost = async (id: number, post: CreatePostPayload) => {
+export const updatePost = async (post: UpdatePostParams) => {
 	const result = await db
 		.update(Posts)
 		.set({
 			content: post.content,
 		})
-		.where(eq(Posts.id, id))
+		.where(eq(Posts.id, post.id))
 		.returning();
 
 	if (!result.length) {
-		throw new CouldNotUpdateError(`Failed to update post with id: ${id}`);
+		throw new CouldNotUpdateError(`Failed to update post with id: ${post.id}`);
 	}
 
 	return result[0];
