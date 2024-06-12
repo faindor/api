@@ -3,24 +3,19 @@ import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
 import { schemaValidator } from "@shared/schemaValidator";
-import { InvalidPayloadError } from "@shared/types/errors";
 import {
 	createUser,
-	findUserByCredentials,
 	getPublicUserInfoById,
+	getUserByCredentials,
 } from "./service";
-import {
-	type LoginPayload,
-	type RegisterPayload,
-	getUserSchema,
-} from "./types/request";
+import { loginSchema, registerSchema, userIdSchema } from "./types/request";
 
 const usersApp = new Hono();
 
 usersApp.get("/:id", jwt, async (c) => {
 	try {
 		const userId = schemaValidator({
-			schema: getUserSchema,
+			schema: userIdSchema,
 			value: c.req.param("id"),
 			route: "/users/:id",
 		});
@@ -35,13 +30,13 @@ usersApp.get("/:id", jwt, async (c) => {
 
 usersApp.post("/login", async (c) => {
 	try {
-		const payload = await c.req.json<LoginPayload>();
+		const { email, password } = schemaValidator({
+			schema: loginSchema,
+			value: c.req.json(),
+			route: "/users/login",
+		});
 
-		if (!payload.email || !payload.password) {
-			throw new InvalidPayloadError("Email and password are required to login");
-		}
-
-		const user = await findUserByCredentials(payload.email, payload.password);
+		const user = await getUserByCredentials({ email, password });
 
 		// Create token with the user's id and organization's domain
 		const token = await sign(
@@ -62,17 +57,15 @@ usersApp.post("/login", async (c) => {
 
 usersApp.post("/register", async (c) => {
 	try {
-		const payload = await c.req.json<RegisterPayload>();
+		const { name, email, password } = schemaValidator({
+			schema: registerSchema,
+			value: c.req.json(),
+			route: "/users/register",
+		});
 
-		if (!payload.name || !payload.email || !payload.password) {
-			throw new InvalidPayloadError(
-				"Email and password are required to register",
-			);
-		}
+		const createdUser = await createUser({ name, email, password });
 
-		const userCreated = await createUser(payload);
-
-		return c.json(userCreated);
+		return c.json(createdUser);
 	} catch (error) {
 		console.error(error);
 		return c.json({ error }, { status: 400 });

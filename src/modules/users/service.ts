@@ -14,7 +14,10 @@ import {
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
-import type { RegisterPayload } from "./types/request";
+import type {
+	CreateUserParams,
+	GetUserByCredentialsParams,
+} from "./types/request";
 
 export const getPublicUserInfoById = async (id: number) => {
 	const result = await db
@@ -80,10 +83,10 @@ export const getUserByEmail = async (email: string) => {
 	return result[0];
 };
 
-export const findUserByCredentials = async (
-	email: string,
-	password: string,
-) => {
+export const getUserByCredentials = async ({
+	email,
+	password,
+}: GetUserByCredentialsParams) => {
 	const user = await getUserByEmail(email);
 
 	if (!user) {
@@ -101,11 +104,15 @@ export const findUserByCredentials = async (
 	return user;
 };
 
-export const createUser = async (user: RegisterPayload) => {
+export const createUser = async ({
+	name,
+	email,
+	password,
+}: CreateUserParams) => {
 	let organizationId = null;
 
 	// Only uses the domain (i.e "example" from "example@example.com")
-	const organizationDomain = user.email.split("@")[1];
+	const organizationDomain = email.split("@")[1];
 	const existingOrganization =
 		await getOrganizationByDomain(organizationDomain);
 
@@ -122,9 +129,9 @@ export const createUser = async (user: RegisterPayload) => {
 	const result = await db
 		.insert(Users)
 		.values({
-			name: user.name,
-			email: user.email,
-			password: await Bun.password.hash(user.password),
+			name: name,
+			email: email,
+			password: await Bun.password.hash(password),
 			role: UserRoles.USER,
 			organizationId: organizationId,
 		})
@@ -136,7 +143,7 @@ export const createUser = async (user: RegisterPayload) => {
 
 	if (!result.length) {
 		throw new CouldNotCreateError(
-			`Failed to create user with email: ${user.email} and name: ${user.name}`,
+			`Failed to create user with email: ${email} and name: ${name}`,
 		);
 	}
 
