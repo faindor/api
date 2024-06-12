@@ -3,19 +3,20 @@ import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
 import { schemaValidator } from "@shared/schemaValidator";
+import { idSchema } from "@shared/types/schemas";
 import {
 	createUser,
 	getPublicUserInfoById,
 	getUserByCredentials,
 } from "./service";
-import { loginSchema, registerSchema, userIdSchema } from "./types/request";
+import { loginSchema, registerSchema } from "./types/request";
 
 const usersApp = new Hono();
 
 usersApp.get("/:id", jwt, async (c) => {
 	try {
 		const userId = schemaValidator({
-			schema: userIdSchema,
+			schema: idSchema,
 			value: c.req.param("id"),
 			route: "/users/:id",
 		});

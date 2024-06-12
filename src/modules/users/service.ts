@@ -104,15 +104,11 @@ export const getUserByCredentials = async ({
 	return user;
 };
 
-export const createUser = async ({
-	name,
-	email,
-	password,
-}: CreateUserParams) => {
+export const createUser = async (user: CreateUserParams) => {
 	let organizationId = null;
 
 	// Only uses the domain (i.e "example" from "example@example.com")
-	const organizationDomain = email.split("@")[1];
+	const organizationDomain = user.email.split("@")[1];
 	const existingOrganization =
 		await getOrganizationByDomain(organizationDomain);
 
@@ -129,9 +125,9 @@ export const createUser = async ({
 	const result = await db
 		.insert(Users)
 		.values({
-			name: name,
-			email: email,
-			password: await Bun.password.hash(password),
+			name: user.name,
+			email: user.email,
+			password: await Bun.password.hash(user.password),
 			role: UserRoles.USER,
 			organizationId: organizationId,
 		})
@@ -143,7 +139,7 @@ export const createUser = async ({
 
 	if (!result.length) {
 		throw new CouldNotCreateError(
-			`Failed to create user with email: ${email} and name: ${name}`,
+			`Failed to create user with email: ${user.email} and name: ${user.name}`,
 		);
 	}
 
