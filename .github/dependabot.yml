@@ -9,3 +9,6 @@ updates:
       interval: "daily"
     commit-message:
       prefix: "build"
+    ignore:
+      - dependency-name: "*"
+        update-types: ["version-update:semver-patch"]
