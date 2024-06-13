@@ -33,7 +33,7 @@ usersApp.post("/login", async (c) => {
 	try {
 		const { email, password } = schemaValidator({
 			schema: loginSchema,
-			value: c.req.json(),
+			value: await c.req.json(),
 			route: "/users/login",
 		});
 
@@ -60,7 +60,7 @@ usersApp.post("/register", async (c) => {
 	try {
 		const { name, email, password } = schemaValidator({
 			schema: registerSchema,
-			value: c.req.json(),
+			value: await c.req.json(),
 			route: "/users/register",
 		});
 

@@ -82,7 +82,7 @@ postsApp.post("/", jwt, async (c) => {
 	try {
 		const { content } = schemaValidator({
 			schema: createPostSchema,
-			value: c.req.json(),
+			value: await c.req.json(),
 			route: "/posts",
 		});
 
@@ -110,7 +110,7 @@ postsApp.patch("/:id", jwt, async (c) => {
 
 		const { content } = schemaValidator({
 			schema: updatePostSchema,
-			value: c.req.json(),
+			value: await c.req.json(),
 			route: "/posts/:id",
 		});
 
