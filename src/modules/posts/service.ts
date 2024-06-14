@@ -94,6 +94,7 @@ export const updatePost = async (post: UpdatePostParams) => {
 		.update(Posts)
 		.set({
 			content: post.content,
+			updatedAt: new Date(),
 		})
 		.where(eq(Posts.id, post.id))
 		.returning();
