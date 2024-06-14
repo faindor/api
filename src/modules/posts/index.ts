@@ -2,7 +2,6 @@ import { Hono } from "hono";
 
 import { getUserById } from "@modules/users/service";
 import { jwt } from "@shared/middleware/jwt";
-import { schemaValidator } from "@shared/schemaValidator";
 import {
 	AuthorizationError,
 	InvalidPayloadError,
@@ -10,6 +9,7 @@ import {
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
 import { idSchema } from "@shared/types/schemas";
+import { schemaValidator } from "@shared/utils/schemaValidator";
 import {
 	createPost,
 	getLatestsPostsByDomain,

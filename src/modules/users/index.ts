@@ -2,8 +2,8 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
-import { schemaValidator } from "@shared/schemaValidator";
 import { idSchema } from "@shared/types/schemas";
+import { schemaValidator } from "@shared/utils/schemaValidator";
 import {
 	createUser,
 	getPublicUserInfoById,
