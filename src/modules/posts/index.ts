@@ -2,13 +2,10 @@ import { Hono } from "hono";
 
 import { getUserById } from "@modules/users/service";
 import { jwt } from "@shared/middleware/jwt";
-import {
-	AuthorizationError,
-	InvalidPayloadError,
-	NotFoundError,
-} from "@shared/types/errors";
+import { AuthorizationError, NotFoundError } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
-import { idSchema } from "@shared/types/schemas";
+import { positiveNumberSchema } from "@shared/types/schemas";
+import { getStatusCode } from "@shared/utils/error";
 import { schemaValidator } from "@shared/utils/schemaValidator";
 import {
 	createPost,
@@ -25,17 +22,18 @@ postsApp.get("/latests", jwt, async (c) => {
 	try {
 		const loggedUser = c.get("loggedUser");
 
-		const page = Number(c.req.query("page")) || 1;
-		if (page < 1) {
-			throw new InvalidPayloadError("The page must be greater than 0");
-		}
+		const page = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.query("page"),
+			route: c.req.path,
+		});
 
 		const posts = await getLatestsPostsByDomain(loggedUser.domain, page);
 
 		return c.json(posts);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
@@ -43,15 +41,15 @@ postsApp.get("/:userId/latests", jwt, async (c) => {
 	try {
 		const loggedUser = c.get("loggedUser");
 
-		const rawUserId = c.req.param("userId");
-		const parsedUserId = Number(rawUserId);
-		if (!parsedUserId) {
-			throw new InvalidPayloadError(`Invalid user id: ${parsedUserId}`);
-		}
+		const userId = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.param("id"),
+			route: c.req.path,
+		});
 
-		const userParam = await getUserById(parsedUserId);
+		const userParam = await getUserById(userId);
 		if (!userParam) {
-			throw new NotFoundError(`User not found with id: ${parsedUserId}`);
+			throw new NotFoundError(`User not found with id: ${userId}`);
 		}
 
 		// A user cannot get posts from another organization (unless they are admin)
@@ -64,17 +62,18 @@ postsApp.get("/:userId/latests", jwt, async (c) => {
 			);
 		}
 
-		const page = Number(c.req.query("page")) || 1;
-		if (page < 1) {
-			throw new InvalidPayloadError("The page must be greater than 0");
-		}
+		const page = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.query("page"),
+			route: c.req.path,
+		});
 
 		const posts = await getLatestsPostsByUserId(userParam.id, page);
 
 		return c.json(posts);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
@@ -83,7 +82,7 @@ postsApp.post("/", jwt, async (c) => {
 		const { content } = schemaValidator({
 			schema: createPostSchema,
 			value: await c.req.json(),
-			route: "/posts",
+			route: c.req.path,
 		});
 
 		const loggedUser = c.get("loggedUser");
@@ -96,22 +95,22 @@ postsApp.post("/", jwt, async (c) => {
 		return c.json(post);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
 postsApp.patch("/:id", jwt, async (c) => {
 	try {
 		const postId = schemaValidator({
-			schema: idSchema,
+			schema: positiveNumberSchema,
 			value: c.req.param("id"),
-			route: "/posts/:id",
+			route: c.req.path,
 		});
 
 		const { content } = schemaValidator({
 			schema: updatePostSchema,
 			value: await c.req.json(),
-			route: "/posts/:id",
+			route: c.req.path,
 		});
 
 		const existingPost = await getPostById(postId);
@@ -124,7 +123,7 @@ postsApp.patch("/:id", jwt, async (c) => {
 		return c.json(updatedPost);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 

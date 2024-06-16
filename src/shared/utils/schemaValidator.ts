@@ -18,7 +18,7 @@ export const schemaValidator = <T extends z.ZodType>({
 		return data;
 	}
 
-	console.error(error);
+	const issuesMesssages = error.issues.map((issue) => issue.message);
 
-	throw new ValidationError(`Failed to validate the request at ${route}`);
+	throw new ValidationError(issuesMesssages, route);
 };

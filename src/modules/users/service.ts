@@ -10,7 +10,7 @@ import { Posts } from "@shared/db/tables/posts";
 import { Users } from "@shared/db/tables/users";
 import {
 	CouldNotCreateError,
-	InvalidPasswordError,
+	InvalidCredentialsError,
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
@@ -96,7 +96,7 @@ export const getUserByCredentials = async ({
 	const arePasswordsEqual = await Bun.password.verify(password, user.password);
 
 	if (!arePasswordsEqual) {
-		throw new InvalidPasswordError(
+		throw new InvalidCredentialsError(
 			`Invalid credentials for the email: ${email}`,
 		);
 	}

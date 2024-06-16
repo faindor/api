@@ -2,7 +2,8 @@ import { Hono } from "hono";
 import { sign } from "hono/jwt";
 
 import { jwt } from "@shared/middleware/jwt";
-import { idSchema } from "@shared/types/schemas";
+import { positiveNumberSchema } from "@shared/types/schemas";
+import { getStatusCode } from "@shared/utils/error";
 import { schemaValidator } from "@shared/utils/schemaValidator";
 import {
 	createUser,
@@ -16,16 +17,16 @@ const usersApp = new Hono();
 usersApp.get("/:id", jwt, async (c) => {
 	try {
 		const userId = schemaValidator({
-			schema: idSchema,
+			schema: positiveNumberSchema,
 			value: c.req.param("id"),
-			route: "/users/:id",
+			route: c.req.path,
 		});
 
 		const user = await getPublicUserInfoById(userId);
 		return c.json(user);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
@@ -34,7 +35,7 @@ usersApp.post("/login", async (c) => {
 		const { email, password } = schemaValidator({
 			schema: loginSchema,
 			value: await c.req.json(),
-			route: "/users/login",
+			route: c.req.path,
 		});
 
 		const user = await getUserByCredentials({ email, password });
@@ -52,7 +53,7 @@ usersApp.post("/login", async (c) => {
 		return c.json({ token });
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
@@ -61,7 +62,7 @@ usersApp.post("/register", async (c) => {
 		const { name, email, password } = schemaValidator({
 			schema: registerSchema,
 			value: await c.req.json(),
-			route: "/users/register",
+			route: c.req.path,
 		});
 
 		const createdUser = await createUser({ name, email, password });
@@ -69,7 +70,7 @@ usersApp.post("/register", async (c) => {
 		return c.json(createdUser);
 	} catch (error) {
 		console.error(error);
-		return c.json({ error }, { status: 400 });
+		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
 
