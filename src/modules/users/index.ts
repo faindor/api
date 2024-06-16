@@ -43,6 +43,7 @@ usersApp.post("/login", async (c) => {
 		// Create token with the user's id and organization's domain
 		const token = await sign(
 			{
+				iat: new Date().getTime(),
 				userId: user.id,
 				userRole: user.role,
 				userDomain: user.organization.domain,
