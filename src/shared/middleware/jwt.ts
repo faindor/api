@@ -29,7 +29,7 @@ export const jwt = createMiddleware<JWTMiddleware>(async (c, next) => {
 			throw new AuthorizationError("No token provided", c.req.path);
 		}
 
-		// Verify and valiadte the token
+		// Verify and validate the token
 		const payload = await verify(token, Bun.env.JWT_SECRET);
 
 		if (!payload.userId || !payload.userDomain || !payload.userRole) {
@@ -43,7 +43,6 @@ export const jwt = createMiddleware<JWTMiddleware>(async (c, next) => {
 			domain: payload.userDomain as string,
 		});
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 

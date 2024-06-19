@@ -32,7 +32,6 @@ postsApp.get("/latests", jwt, async (c) => {
 
 		return c.json(posts);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
@@ -72,7 +71,6 @@ postsApp.get("/:userId/latests", jwt, async (c) => {
 
 		return c.json(posts);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
@@ -94,7 +92,6 @@ postsApp.post("/", jwt, async (c) => {
 
 		return c.json(post);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
@@ -122,7 +119,6 @@ postsApp.patch("/:id", jwt, async (c) => {
 
 		return c.json(updatedPost);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });

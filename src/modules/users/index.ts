@@ -25,7 +25,6 @@ usersApp.get("/:id", jwt, async (c) => {
 		const user = await getPublicUserInfoById(userId);
 		return c.json(user);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
@@ -53,7 +52,6 @@ usersApp.post("/login", async (c) => {
 
 		return c.json({ token });
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
@@ -70,7 +68,6 @@ usersApp.post("/register", async (c) => {
 
 		return c.json(createdUser);
 	} catch (error) {
-		console.error(error);
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
