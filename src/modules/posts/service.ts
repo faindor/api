@@ -1,11 +1,20 @@
-import { desc, eq } from "drizzle-orm";
+import { and, desc, eq } from "drizzle-orm";
 
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
 import { Posts } from "@shared/db/tables/posts";
+import { Reactions } from "@shared/db/tables/reactions";
 import { Users } from "@shared/db/tables/users";
-import { CouldNotCreateError, CouldNotUpdateError } from "@shared/types/errors";
-import type { CreatePostParams, UpdatePostParams } from "./types/request";
+import {
+	CouldNotCreateError,
+	CouldNotDeleteError,
+	CouldNotUpdateError,
+} from "@shared/types/errors";
+import type {
+	CreatePostParams,
+	ReactPostParams,
+	UpdatePostParams,
+} from "./types/request";
 
 export const getPostById = async (id: number) => {
 	const result = await db
@@ -83,6 +92,44 @@ export const createPost = async (post: CreatePostParams) => {
 	if (!result.length) {
 		throw new CouldNotCreateError(
 			`Failed to create post with content: ${post.content} for user: ${post.userId}`,
+		);
+	}
+
+	return result[0];
+};
+
+export const reactPost = async (reaction: ReactPostParams) => {
+	const result = await db
+		.insert(Reactions)
+		.values({
+			userId: reaction.userId,
+			postId: reaction.postId,
+		})
+		.returning();
+
+	if (!result.length) {
+		throw new CouldNotCreateError(
+			`Failed to create reaction for post with id: ${reaction.postId} and user with id: ${reaction.userId}`,
+		);
+	}
+
+	return result[0];
+};
+
+export const unreactPost = async (reaction: ReactPostParams) => {
+	const result = await db
+		.delete(Reactions)
+		.where(
+			and(
+				eq(Reactions.userId, reaction.userId),
+				eq(Reactions.postId, reaction.postId),
+			),
+		)
+		.returning();
+
+	if (!result.length) {
+		throw new CouldNotDeleteError(
+			`Failed to delete reaction for post with id: ${reaction.postId} and user with id: ${reaction.userId}`,
 		);
 	}
 

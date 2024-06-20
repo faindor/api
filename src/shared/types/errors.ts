@@ -51,6 +51,12 @@ export class CouldNotUpdateError extends CustomError {
 	}
 }
 
+export class CouldNotDeleteError extends CustomError {
+	constructor(reason: string | string[], context?: string) {
+		super(reason, 500, context);
+	}
+}
+
 export class AuthorizationError extends CustomError {
 	constructor(reason: string | string[], context?: string) {
 		super(reason, 401, context);
