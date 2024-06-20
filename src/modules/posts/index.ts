@@ -12,6 +12,8 @@ import {
 	getLatestsPostsByDomain,
 	getLatestsPostsByUserId,
 	getPostById,
+	reactPost,
+	unreactPost,
 	updatePost,
 } from "./service";
 import { createPostSchema, updatePostSchema } from "./types/request";
@@ -91,6 +93,42 @@ postsApp.post("/", jwt, async (c) => {
 		});
 
 		return c.json(post);
+	} catch (error) {
+		return c.json({ error }, { status: getStatusCode(error) });
+	}
+});
+
+postsApp.post("/:id/react", jwt, async (c) => {
+	try {
+		const postId = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.param("id"),
+			route: c.req.path,
+		});
+
+		const loggedUser = c.get("loggedUser");
+
+		await reactPost({ postId: postId, userId: loggedUser.id });
+
+		return c.json({ success: true });
+	} catch (error) {
+		return c.json({ error }, { status: getStatusCode(error) });
+	}
+});
+
+postsApp.post("/:id/unreact", jwt, async (c) => {
+	try {
+		const postId = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.param("id"),
+			route: c.req.path,
+		});
+
+		const loggedUser = c.get("loggedUser");
+
+		await unreactPost({ postId: postId, userId: loggedUser.id });
+
+		return c.json({ success: true });
 	} catch (error) {
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
