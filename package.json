@@ -4,7 +4,9 @@
 		"test": "bun test",
 		"biome": "biome check --write --config-path=./biome.json ./**/*",
 		"db:generate": "drizzle-kit generate",
-		"db:pull": "drizzle-kit push",
+		"db:up": "drizzle-kit up",
+		"db:introspect": "drizzle-kit introspect",
+		"db:migrate": "drizzle-kit migrate",
 		"db:push": "drizzle-kit push"
 	},
 	"dependencies": {
