@@ -7,6 +7,7 @@ import { UserRoles } from "@shared/types/roles";
 import { positiveNumberSchema } from "@shared/types/schemas";
 import { getStatusCode } from "@shared/utils/error";
 import { schemaValidator } from "@shared/utils/schemaValidator";
+import commentsApp from "./comments";
 import reactionsApp from "./reactions";
 import {
 	createPost,
@@ -125,5 +126,6 @@ postsApp.patch("/:id", jwt, async (c) => {
 });
 
 postsApp.route("/", reactionsApp);
+postsApp.route("/", commentsApp);
 
 export default postsApp;
