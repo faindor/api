@@ -7,13 +7,12 @@ import { UserRoles } from "@shared/types/roles";
 import { positiveNumberSchema } from "@shared/types/schemas";
 import { getStatusCode } from "@shared/utils/error";
 import { schemaValidator } from "@shared/utils/schemaValidator";
+import reactionsApp from "./reactions";
 import {
 	createPost,
 	getLatestsPostsByDomain,
 	getLatestsPostsByUserId,
 	getPostById,
-	reactPost,
-	unreactPost,
 	updatePost,
 } from "./service";
 import { createPostSchema, updatePostSchema } from "./types/request";
@@ -98,42 +97,6 @@ postsApp.post("/", jwt, async (c) => {
 	}
 });
 
-postsApp.post("/:id/react", jwt, async (c) => {
-	try {
-		const postId = schemaValidator({
-			schema: positiveNumberSchema,
-			value: c.req.param("id"),
-			route: c.req.path,
-		});
-
-		const loggedUser = c.get("loggedUser");
-
-		await reactPost({ postId: postId, userId: loggedUser.id });
-
-		return c.json({ success: true });
-	} catch (error) {
-		return c.json({ error }, { status: getStatusCode(error) });
-	}
-});
-
-postsApp.post("/:id/unreact", jwt, async (c) => {
-	try {
-		const postId = schemaValidator({
-			schema: positiveNumberSchema,
-			value: c.req.param("id"),
-			route: c.req.path,
-		});
-
-		const loggedUser = c.get("loggedUser");
-
-		await unreactPost({ postId: postId, userId: loggedUser.id });
-
-		return c.json({ success: true });
-	} catch (error) {
-		return c.json({ error }, { status: getStatusCode(error) });
-	}
-});
-
 postsApp.patch("/:id", jwt, async (c) => {
 	try {
 		const postId = schemaValidator({
@@ -160,5 +123,7 @@ postsApp.patch("/:id", jwt, async (c) => {
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
 });
+
+postsApp.route("/", reactionsApp);
 
 export default postsApp;
