@@ -15,6 +15,13 @@
       "when": 1719010711513,
       "tag": "0001_strange_baron_strucker",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1719035975054,
+      "tag": "0002_long_mystique",
+      "breakpoints": true
     }
   ]
 }
