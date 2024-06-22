@@ -13,11 +13,6 @@ export type CreatePostParams = {
 	userId: number;
 };
 
-export type ReactPostParams = {
-	postId: number;
-	userId: number;
-};
-
 export type UpdatePostParams = {
 	id: number;
 	content: string;
