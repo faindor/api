@@ -1,4 +1,4 @@
-import { and, desc, eq } from "drizzle-orm";
+import { and, count, desc, eq } from "drizzle-orm";
 
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
@@ -41,12 +41,14 @@ export const getLatestsPostsByUserId = async (userId: number, page = 1) => {
 				name: Users.name,
 				email: Users.email,
 			},
+			reactionsCount: count(Reactions.id),
 			createdAt: Posts.createdAt,
 			updatedAt: Posts.updatedAt,
 			deletedAt: Posts.deletedAt,
 		})
 		.from(Posts)
 		.innerJoin(Users, eq(Posts.userId, Users.id))
+		.leftJoin(Reactions, eq(Posts.id, Reactions.postId))
 		.where(eq(Users.id, userId))
 		.orderBy(desc(Posts.createdAt))
 		.offset((page - 1) * 10) // Get 10 posts per page, skip the other ones
@@ -65,6 +67,7 @@ export const getLatestsPostsByDomain = async (domain: string, page = 1) => {
 				name: Users.name,
 				email: Users.email,
 			},
+			reactionsCount: count(Reactions.id),
 			createdAt: Posts.createdAt,
 			updatedAt: Posts.updatedAt,
 			deletedAt: Posts.deletedAt,
@@ -72,6 +75,7 @@ export const getLatestsPostsByDomain = async (domain: string, page = 1) => {
 		.from(Posts)
 		.innerJoin(Users, eq(Posts.userId, Users.id))
 		.innerJoin(Organizations, eq(Users.organizationId, Organizations.id))
+		.leftJoin(Reactions, eq(Posts.id, Reactions.postId))
 		.where(eq(Organizations.domain, domain))
 		.orderBy(desc(Posts.createdAt))
 		.offset((page - 1) * 10) // Get 10 posts per page, skip the other ones
