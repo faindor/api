@@ -114,3 +114,19 @@ export const updatePost = async (post: UpdatePostParams) => {
 
 	return result[0];
 };
+
+export const softDeletePost = async (postId: number) => {
+	const result = await db
+		.update(Posts)
+		.set({
+			deletedAt: new Date(),
+		})
+		.where(eq(Posts.id, postId))
+		.returning();
+
+	if (!result.length) {
+		throw new CouldNotDeleteError(`Failed to delete post with id: ${postId}`);
+	}
+
+	return result[0];
+};

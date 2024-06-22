@@ -11,6 +11,7 @@ import commentsApp from "./comments";
 import reactionsApp from "./reactions";
 import {
 	createPost,
+	softDeletePost,
 	getLatestsPostsByDomain,
 	getLatestsPostsByUserId,
 	getPostById,
@@ -120,6 +121,22 @@ postsApp.patch("/:id", jwt, async (c) => {
 		const updatedPost = await updatePost({ id: existingPost.id, content });
 
 		return c.json(updatedPost);
+	} catch (error) {
+		return c.json({ error }, { status: getStatusCode(error) });
+	}
+});
+
+postsApp.delete("/:id", jwt, async (c) => {
+	try {
+		const postId = schemaValidator({
+			schema: positiveNumberSchema,
+			value: c.req.param("id"),
+			route: c.req.path,
+		});
+
+		const deletedPost = await softDeletePost(postId);
+
+		return c.json(deletedPost);
 	} catch (error) {
 		return c.json({ error }, { status: getStatusCode(error) });
 	}
