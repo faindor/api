@@ -1,8 +1,18 @@
 import db from "@shared/db";
 import { Comments } from "@shared/db/tables/comments";
-import { CouldNotCreateError, CouldNotUpdateError } from "@shared/types/errors";
-import { eq } from "drizzle-orm";
-import type { CreateCommentParams, UpdateCommentParams } from "./types/request";
+import {
+	CouldNotCreateError,
+	CouldNotDeleteError,
+	CouldNotUpdateError,
+} from "@shared/types/errors";
+import { and, desc, eq } from "drizzle-orm";
+import type {
+	CreateCommentParams,
+	DeleteCommentParams,
+	UpdateCommentParams,
+} from "./types/request";
+import { Users } from "@shared/db/tables/users";
+import { Posts } from "@shared/db/tables/posts";
 
 export const getCommentById = async (id: number) => {
 	const result = await db
@@ -21,6 +31,31 @@ export const getCommentById = async (id: number) => {
 	if (!result.length) return null;
 
 	return result[0];
+};
+
+export const getLatestsCommentsByPostId = async (postId: number, page = 1) => {
+	const result = await db
+		.select({
+			id: Comments.id,
+			content: Comments.content,
+			postId: Comments.postId,
+			user: {
+				id: Users.id,
+				name: Users.name,
+				email: Users.email,
+			},
+			createdAt: Comments.createdAt,
+			updatedAt: Comments.updatedAt,
+		})
+		.from(Comments)
+		.innerJoin(Posts, eq(Comments.postId, Posts.id))
+		.innerJoin(Users, eq(Comments.userId, Users.id))
+		.where(eq(Posts.id, postId))
+		.orderBy(desc(Comments.createdAt))
+		.offset((page - 1) * 10) // Get 10 comments per page, skip the other ones
+		.limit(10);
+
+	return result;
 };
 
 export const createComment = async (comment: CreateCommentParams) => {
@@ -49,12 +84,34 @@ export const updateComment = async (comment: UpdateCommentParams) => {
 			content: comment.content,
 			updatedAt: new Date(),
 		})
-		.where(eq(Comments.id, comment.id))
+		.where(
+			and(eq(Comments.id, comment.id), eq(Comments.postId, comment.postId)),
+		)
 		.returning();
 
 	if (!result.length) {
 		throw new CouldNotUpdateError(
 			`Failed to update comment with id: ${comment.id}`,
+		);
+	}
+
+	return result[0];
+};
+
+export const softDeleteComment = async (comment: DeleteCommentParams) => {
+	const result = await db
+		.update(Comments)
+		.set({
+			deletedAt: new Date(),
+		})
+		.where(
+			and(eq(Comments.id, comment.id), eq(Comments.postId, comment.postId)),
+		)
+		.returning();
+
+	if (!result.length) {
+		throw new CouldNotDeleteError(
+			`Failed to delete comment with id: ${comment.id}`,
 		);
 	}
 
