@@ -16,3 +16,8 @@ export type CreateCommentParams = {
 	postId: number;
 	content: string;
 };
+
+export type DeleteCommentParams = {
+	id: number;
+	postId: number;
+};
