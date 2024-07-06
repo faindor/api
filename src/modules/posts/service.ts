@@ -74,6 +74,16 @@ export const getLatestsPostsByDomain = async (domain: string, page = 1) => {
 		.leftJoin(Reactions, eq(Posts.id, Reactions.postId))
 		.where(eq(Organizations.domain, domain))
 		.orderBy(desc(Posts.createdAt))
+		.groupBy(
+			Posts.id,
+			Posts.content,
+			Users.id,
+			Users.name,
+			Users.email,
+			Posts.createdAt,
+			Posts.updatedAt,
+			Posts.deletedAt,
+		)
 		.offset((page - 1) * 10) // Get 10 posts per page, skip the other ones
 		.limit(10);
 
