@@ -74,3 +74,9 @@ export class ValidationError extends CustomError {
 		super(reason, 400, context);
 	}
 }
+
+export class DBError extends CustomError {
+	constructor(reason: string | string[], context?: string) {
+		super(reason, 500, context);
+	}
+}
