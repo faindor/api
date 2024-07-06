@@ -25,7 +25,7 @@ commentsApp.get("/:postId/comments", jwt, async (c) => {
 
 		const page = schemaValidator({
 			schema: positiveNumberSchema,
-			value: c.req.query("page"),
+			value: c.req.query("page") ?? 1,
 			route: c.req.path,
 		});
 
