@@ -1,9 +1,9 @@
 import db from "@shared/db";
 import { Reactions } from "@shared/db/tables/reactions";
 import { CouldNotCreateError, CouldNotDeleteError } from "@shared/types/errors";
+import { parseDBError } from "@shared/utils/error";
 import { and, eq } from "drizzle-orm";
 import type { ReactPostParams } from "./types/request";
-import { parseDBError } from "@shared/utils/error";
 
 export const reactPost = async (reaction: ReactPostParams) => {
 	try {

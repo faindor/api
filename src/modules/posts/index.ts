@@ -11,10 +11,10 @@ import commentsApp from "./comments";
 import reactionsApp from "./reactions";
 import {
 	createPost,
-	softDeletePost,
 	getLatestsPostsByDomain,
 	getLatestsPostsByUserId,
 	getPostById,
+	softDeletePost,
 	updatePost,
 } from "./service";
 import { createPostSchema, updatePostSchema } from "./types/request";

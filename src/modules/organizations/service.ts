@@ -3,8 +3,8 @@ import { eq } from "drizzle-orm";
 import db from "@shared/db";
 import { Organizations } from "@shared/db/tables/organizations";
 import { CouldNotCreateError } from "@shared/types/errors";
-import type { CreateOrganizationParams } from "./types/request";
 import { parseDBError } from "@shared/utils/error";
+import type { CreateOrganizationParams } from "./types/request";
 
 export const getOrganizationByDomain = async (domain: string) => {
 	try {

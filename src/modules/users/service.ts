@@ -14,11 +14,11 @@ import {
 	NotFoundError,
 } from "@shared/types/errors";
 import { UserRoles } from "@shared/types/roles";
+import { parseDBError } from "@shared/utils/error";
 import type {
 	CreateUserParams,
 	GetUserByCredentialsParams,
 } from "./types/request";
-import { parseDBError } from "@shared/utils/error";
 
 export const getPublicUserInfoById = async (id: number) => {
 	try {

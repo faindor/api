@@ -10,8 +10,8 @@ import {
 	CouldNotDeleteError,
 	CouldNotUpdateError,
 } from "@shared/types/errors";
-import type { CreatePostParams, UpdatePostParams } from "./types/request";
 import { parseDBError } from "@shared/utils/error";
+import type { CreatePostParams, UpdatePostParams } from "./types/request";
 
 export const getPostById = async (id: number) => {
 	try {

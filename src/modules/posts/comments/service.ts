@@ -1,19 +1,19 @@
 import db from "@shared/db";
 import { Comments } from "@shared/db/tables/comments";
+import { Posts } from "@shared/db/tables/posts";
+import { Users } from "@shared/db/tables/users";
 import {
 	CouldNotCreateError,
 	CouldNotDeleteError,
 	CouldNotUpdateError,
 } from "@shared/types/errors";
+import { parseDBError } from "@shared/utils/error";
 import { and, desc, eq } from "drizzle-orm";
 import type {
 	CreateCommentParams,
 	DeleteCommentParams,
 	UpdateCommentParams,
 } from "./types/request";
-import { Users } from "@shared/db/tables/users";
-import { Posts } from "@shared/db/tables/posts";
-import { parseDBError } from "@shared/utils/error";
 
 export const getCommentById = async (id: number) => {
 	try {
